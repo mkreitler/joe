@@ -35,7 +35,7 @@ joe.Listeners = {
   },
   
   removeListener: function(theListener) {
-    joe.utility.remove(this.listeners, theListener);
+    joe.Utility.fastErase(this.listeners, theListener);
   },
  
   removeAllListeners: function() {

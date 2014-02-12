@@ -862,10 +862,19 @@ joe.Resources.FontEx = new joe.ClassEx(
 {
   font: null,
 
-  draw: function(context, text, x, y, color, baseLine, size) {
+  draw: function(context, text, x, y, color, size, hAlign, vAlign) {
     var textColor = color || "#00FFFF";
-    var vertAlign = baseLine || "top";
+    var vertAlign = "top";
     var textSize = (size || 30) + "px";
+    var measure = hAlign || vAlign ? this.measureText(text, size) : null;
+
+    if (hAlign) {
+      x = x - hAlign * (measure.bounds.maxx - measure.bounds.minx);
+    }
+
+    if (vAlign) {
+      y = y - vAlign * (measure.bounds.maxy - measure.bounds.miny);
+    }
 
     context.save();
 

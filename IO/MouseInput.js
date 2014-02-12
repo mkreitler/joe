@@ -1,12 +1,12 @@
 // Singleton that captures mouse input for the game.
 //
-// Usage:
-// <pre>myClass = function() {
-//   this.mouseDown = function(x, y) { ... };
-//   this.mouseUp = function(x, y) { ... };
-//   this.mouseClick = function(x, y) { ... };
-//   ...and so on...
-// }
+// MouseListener module:
+//   mouseDown: function(x, y) {};
+//   mouseUp: function(x, y) {};
+//   mouseDrag: function(x, y) {};
+//   mouseOver: function(x, y) {};
+//   mouseClick: function(x, y) {};
+//   mouseDoubleClick: function(x, y) {};
 //
 // myInstance = new myClass();
 //
@@ -32,11 +32,11 @@ joe.Listeners, {
   },
   
   getClientX: function(e) {
-    return e.srcElement ? e.clientX - e.srcElement.offsetLeft : e.clientX;
+    return Math.round((e.srcElement ? e.clientX - e.srcElement.offsetLeft : (e.target ? e.clientX - e.target.offsetLeft : e.clientX)) / joe.Graphics.globalScale);
   },
   
   getClientY: function(e) {
-    return e.srcElement ? e.clientY - e.srcElement.offsetTop : e.clientY;
+    return Math.round((e.srcElement ? e.clientY - e.srcElement.offsetTop : (e.target ? e.clientY - e.target.offsetTop : e.clientY)) / joe.Graphics.globalScale);
   },
   
   mouseUp: function(e) {

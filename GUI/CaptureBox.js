@@ -17,56 +17,92 @@ joe.GUI.CaptureBox = new joe.ClassEx(
   },
 
   // Instance Definition ////////////////////////////////////////////////////
-  [
-  	joe.MathEx.AABBmodule,
-  	joe.GUI.WidgetModule,
-  	{
-      onColor: "#ffff00",
-      offColor: "#0000ff",
-      bIsOn: false,
-      customDraw: null,
+  {
+    requires: joe.GUI.WidgetModule,
 
-      init: function(x, y, width, height, onColor, offColor, inputCallbacks, customDraw) {
-        this.AABBset(x, y, width, height);
+    onColor: "#ffff00",
+    offColor: "#0000ff",
+    bIsOn: false,
+    customDraw: null,
 
-        this.onColor = onColor || "#ffff00";
-        this.offColor = offColor || "#0000ff";
+    init: function(x, y, width, height, onColor, offColor, inputCallbacks, customDraw) {
+      this.AABBset(x, y, width, height);
 
-        this.inputCallbacks = inputCallbacks || null;
-        this.customDraw = customDraw;
+      this.onColor = onColor;
+      this.offColor = offColor;
 
-        joe.GUI.CaptureBox.addCaptureBox(this);
-      },
+      this.inputCallbacks = inputCallbacks || null;
+      this.customDraw = customDraw;
 
-      destroy: function() {
-        joe.GUI.CaptureBox.removeCaptureBox(this);
-      },
+      joe.GUI.CaptureBox.addCaptureBox(this);
+    },
 
-      isOn: function() {
-      	return this.bIsOn && this.widgetActive();
-      },
+    press: function() {
+      this.bIsOn = true;
+    },
 
-      draw: function(context, worldX, worldY) {
-      	var color = this.bIsOn ? this.onColor : this.offColor;
+    release: function() {
+      this.bIsOn = false;
+    },
 
-      	if (this.widgetVisible()) {
-      		this.AABBoffset(worldX, worldY);
+    mouseDown: function(x, y) {
+      var bConsumed = false;
 
-	      	context.save();
+      if (this.widgetActive() && this.widgetVisible()) {
+        this.press();
 
-	      	this.AABBdraw(context, color);
+        this.widgetInputHandlers.mouseDown.call(this, x, y);
 
-	      	this.strokeStyle = color;
-
-	      	if (this.customDraw) {
-	      		this.customDraw(context, worldX, worldY);
-	      	}
-
-	      	context.restore();
-
-	      	this.AABBoffset(-worldX, -worldY);
-	     }
+        bConsumed = true;
       }
-  	}
-  ]
+
+      return bConsumed;
+    },
+
+    mouseUp: function(x, y) {
+      var bConsumed = false;
+
+      if (this.widgetActive() && this.widgetVisible()) {
+        this.release();
+
+        this.widgetInputHandlers.mouseUp.call(this, x, y);
+
+        bConsumed = true;
+      }
+
+      return bConsumed;
+    },
+    
+    destroy: function() {
+      joe.GUI.CaptureBox.removeCaptureBox(this);
+    },
+
+    isOn: function() {
+    	return this.bIsOn && this.widgetActive();
+    },
+
+    draw: function(context, worldX, worldY) {
+    	var color = this.bIsOn ? this.onColor : this.offColor;
+
+    	if (this.widgetVisible()) {
+    		this.AABBoffset(worldX, worldY);
+
+        if ((this.isOn() && this.onColor) || this.offColor) {
+        	context.save();
+
+        	this.AABBdraw(context, color);
+
+        	this.strokeStyle = color;
+
+        	context.restore();
+        }
+
+        if (this.customDraw) {
+          this.customDraw(context, worldX, worldY);
+        }
+        
+      	this.AABBoffset(-worldX, -worldY);
+     }
+    }
+	}
 );

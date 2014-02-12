@@ -2,17 +2,17 @@
  * Draws a labeled box and responds to mouse and touch events.
  */
 
-joe.GUI.ClickBox = new joe.ClassEx(
+joe.GUI.HighlightBox = new joe.ClassEx(
   // Stati Definition ///////////////////////////////////////////////////////////
   {
-    clickBoxes: [],
+    highlightBoxes: [],
 
-    addClickBox: function(newBox) {
-      this.clickBoxes.push(newBox);
+    addHighlightBox: function(newBox) {
+      this.highlightBoxes.push(newBox);
     },
 
-    removeClickBox: function(box) {
-      joe.Utility.erase(this.clickBoxes, box);
+    removeHighlightBox: function(box) {
+      joe.Utility.erase(this.highlightBoxes, box);
     }
   },
 
@@ -20,25 +20,20 @@ joe.GUI.ClickBox = new joe.ClassEx(
   {
     requires: joe.GUI.WidgetModule,
 
-    onColor: "#ffff00",
-    offColor: "#0000ff",
+    highlightImage: null,
     bOn: false,
-    customDraw: null,
 
-    init: function(x, y, width, height, onColor, offColor, inputCallbacks, customDraw) {
+    init: function(x, y, width, height, highlightImage, inputCallbacks) {
       this.AABBset(x, y, width, height);
 
-      this.onColor = onColor || "#ffff00";
-      this.offColor = offColor || "#0000ff";
-
+      this.highlightImage = highlightImage;
       this.inputCallbacks = inputCallbacks || null;
-      this.customDraw = customDraw;
 
-      joe.GUI.ClickBox.addClickBox(this);
+      joe.GUI.HighlightBox.addHighlightBox(this);
     },
 
     destroy: function() {
-      joe.GUI.ClickBox.removeClickBox(this);
+      joe.GUI.HighlightBox.removeHighlightBox(this);
     },
 
     update: function(dt, gameTime, worldX, worldY) {
@@ -60,25 +55,12 @@ joe.GUI.ClickBox = new joe.ClassEx(
     draw: function(context, worldX, worldY) {
       var color = joe.GUI.INACTIVE_COLOR;
 
-      if (context && this.widgetVisible()) {
+      if (context && this.widgetVisible() && this.bIsOn) {
         this.AABBoffset(worldX, worldY);
 
-        if (this.customDraw) {
-          this.customDraw.call(this, context, worldX, worldY);
-        }
-        else {
-          context.save();
-          if (this.widgetActive()) {
-            color = this.bIsOn ? this.onColor : this.offColor;
-          }
-
-          context.strokeStyle = color;
-          context.fillStyle = color;
-
-          this.AABBdraw(context, color);
-
-          context.restore();
-        }
+        context.save();
+        context.drawImage(this.highlightImage, this.bounds.x, this.bounds.y);
+        context.restore();
 
         this.AABBoffset(-worldX, -worldY);
       }

@@ -2,13 +2,12 @@
 // Handlers should return 'true' if they want to consume the event.
 //
 // Usage:
-// <pre>myjoe.Class = function {
-//   this.keyPress = function(keyCode) {};
-//   this.keyRelease = function(keyCode) {};
-//   this.keyTap = function(keyCode) {};
-//   this.keyHold = function(keyCode) {};
-//   this.keyDoubleTap = function(keyCode) {};
-// }
+//  KeyListener module:
+//   keyPress: function(keyCode) {};
+//   keyRelease: function(keyCode) {};
+//   keyTap: function(keyCode) {};
+//   keyHold: function(keyCode) {};
+//   keyDoubleTap: function(keyCode) {};
 //
 // myInstance = new joe.Class();
 //
@@ -150,6 +149,8 @@ joe.KeyInput = new joe.ClassEx([
   
   // Key codes
   KEYS: {
+  BACKSPACE: 8,
+  ENTER: 13,
   SHIFT: 16,
   CTRL: 17,
   ALT: 18,
@@ -159,6 +160,7 @@ joe.KeyInput = new joe.ClassEx([
   UP: 38,
   RIGHT: 39,
   DOWN: 40,
+  DELETE: 46,
   0: 48,
   1: 49,
   2: 50,

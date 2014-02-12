@@ -2,7 +2,147 @@ joe.MathEx = {};
 
 joe.MathEx.EPSILON = 0.001;
 joe.MathEx.EPSILON_ANGLE = 0.0001;
+joe.MathEx.resultRect = {x:0, y:0, w:0, h:0};
+joe.MathEx.COS_TABLE = [];
+joe.MathEx.SIN_TABLE = [];
+joe.MathEx.TABLE_SIZE = 2048;
+joe.MathEx.TWO_PI = 2 * Math.PI;
 
+// Lookups --------------------------------------------------------------------
+joe.MathEx.buildTables = function() {
+  var i = 0;
+
+  for (i=0; i<joe.MathEx.TABLE_SIZE; ++i) {
+    joe.MathEx.COS_TABLE.push(Math.cos(2 * Math.PI * i / joe.MathEx.TABLE_SIZE));
+    joe.MathEx.SIN_TABLE.push(Math.sin(2 * Math.PI * i / joe.MathEx.TABLE_SIZE));
+  }
+};
+
+joe.MathEx.trigTransition = function(param) {
+  param = Math.min(param, 1);
+  param = Math.max(0, param);
+
+  return (1 - joe.MathEx.cos(Math.PI * param)) * 0.5;
+};
+
+joe.MathEx.cos = function(angle) {
+  var branchCut = Math.floor(angle / joe.MathEx.TWO_PI),
+      lowIndex = 0,
+      highIndex = 0,
+      result = 0;
+
+  angle = angle - branchCut * joe.MathEx.TWO_PI;
+
+  // Angle is now in the range [0, 2PI).
+  
+  lowIndex = joe.MathEx.TABLE_SIZE * angle / joe.MathEx.TWO_PI;
+  highIndex = Math.floor(lowIndex);
+
+  if (Math.abs(lowIndex - highIndex) > joe.MathEx.EPSILON ) {
+    // LERP to final result.
+    result = joe.MathEx.COS_TABLE[highIndex] * (1 - (lowIndex - highIndex));
+    highIndex += 1;
+    result += joe.MathEx.COS_TABLE[highIndex] * (1 - (highIndex - lowIndex));
+  }
+  else {
+    result = joe.MathEx.COS_TABLE[highIndex];
+  }
+
+  return result;
+};
+
+joe.MathEx.sin = function(angle) {
+  var branchCut = Math.floor(angle / joe.MathEx.TWO_PI),
+      lowIndex = 0,
+      highIndex = 0,
+      result = 0;
+
+  angle = angle - branchCut * joe.MathEx.TWO_PI;
+
+  // Angle is now in the range [0, 2PI).
+  
+  lowIndex = joe.MathEx.TABLE_SIZE * angle / joe.MathEx.TWO_PI;
+  highIndex = Math.floor(lowIndex);
+
+  if (Math.abs(lowIndex - highIndex) > joe.MathEx.EPSILON ) {
+    // LERP to final result.
+    result = joe.MathEx.SIN_TABLE[highIndex] * (1 - (lowIndex - highIndex));
+    highIndex += 1;
+    result += joe.MathEx.SIN_TABLE[highIndex] * (1 - (highIndex - lowIndex));
+  }
+  else {
+    result = joe.MathEx.SIN_TABLE[highIndex];
+  }
+
+  return result;
+};
+
+joe.MathEx.tan = function(angle) {
+  var sin = joe.MathEx.sin(angle),
+      cos = joe.MathEx.cos(angle),
+      result = cos ? sin / cos : undefined;
+
+  return result;
+};
+
+// Rectangles ----------------------------------------------------------------
+joe.MathEx.rect2 = function(x, y, w, h) {
+  this.x = x;
+  this.y = y;
+  this.w = w;
+  this.h = h;
+};
+
+joe.MathEx.rectContainsPoint = function(r, x, y) {
+  return (x >= r.x &&
+          x <= r.x + r.w &&
+          y >= r.y &&
+          y <= r.y + r.h);
+},
+
+joe.MathEx.clip = function(r1, r2) {
+  var rt = null,
+      result = joe.MathEx.resultRect;
+
+  // Ensure that r1.w < r2.w.
+  if (r2.w < r1.w) {
+    rt = r1;
+    r1 = r2;
+    r2 = rt;
+  }
+
+  if (r1.x + r1.w < r2.x ||
+      r1.x > r2.x + r2.w) {
+    // No overlap.
+    result = null;
+  }
+  else {
+    result.x = Math.max(r1.x, r2.x);
+    result.w = Math.min(r1.x + r1.w, r2.x + r2.w) - result.x;
+  }
+
+  if (result) {
+    if (r2.h < r1.h) {
+      rt = r1;
+      r1 = r2;
+      r2 = rt;
+    }
+
+    if (r1.y + r1.h < r2.y ||
+        r1.y > r2.y + r2.h) {
+      // No overlap.
+      result = null;
+    }
+    else {
+      result.y = Math.max(r1.y, r2.y);
+      result.h = Math.min(r1.y + r1.h, r2.y + r2.h) - result.y;
+    }
+  }
+
+  return result;
+};
+
+// 2D Vectors ----------------------------------------------------------------
 joe.MathEx.vec2 = function(x, y) {
   this.x = x;
   this.y = y;
@@ -355,3 +495,5 @@ joe.MathEx.Spline3D = function() {
               z: this.zCubics[cubicNum].getValueAt(cubicPos)};
    };
 };
+
+joe.MathEx.buildTables();

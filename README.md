@@ -1,4 +1,0 @@
-joe
-===
-
-Javascript Object Engine

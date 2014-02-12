@@ -47,23 +47,104 @@ joe.GraphicsClass = new joe.ClassEx(null, [
     bWantsToRender: false,
     newBufferCount: 0,
     screenContext: null,
+    wantWidth: 0,
+    wantHeight: 0,
+    globalScale: 1,
+    globalAlpha: 1,
 
-    init: function(left, top, width, height) {
+    init: function(wantWidth, wantHeight) {
+
+      this.wantWidth = wantWidth;
+      this.wantHeight = wantHeight;
+
+      // Create the game canvas (what we actually see).
+      this.resizeCanvas();
+
+      // Create the back buffer (what we render the game into).
+      this.createOffscreenBuffer(wantWidth, wantHeight, true);
+    },
+
+    setGlobalAlpha: function(newAlpha) {
+      if (this.activeContext) {
+        this.activeContext.globalAlpha = newAlpha;
+      }
+    },
+
+    resizeCanvas: function() {
       if (document.body) {
-        this.gameCanvas = document.createElement("canvas");
+        var pageWidth = joe.Utility.getPageWidth(),
+            pageHeight = joe.Utility.getPageHeight(),
+            bAppendCanvas = !this.gameCanvas,
+            wantAspectRatio = this.wantWidth / Math.max(1, this.wantHeight),
+            aspectRatio = pageWidth / Math.max(1, pageHeight),
+            width = this.wantWidth,
+            height = this.wantHeight;
+
+        if (aspectRatio < wantAspectRatio) {
+          // The actual screen is narrower than the desired display.
+          // In this case, we'll crop the height and scale to the
+          // actual width.
+          this.globalScale = pageWidth / this.wantWidth;
+        }
+        else {
+          // The actual screen is wider (or exactly equal to) the
+          // desired display. In this case we'll crop the width and
+          // scale to the actual height.
+          this.globalScale = pageHeight / this.wantHeight;
+        }
+
+        if (!this.gameCanvas) {
+          this.gameCanvas = document.createElement(joe.Utility.isMobile() ? 'screencanvas' : 'canvas');
+//          this.gameCanvas = document.createElement("canvas");
+        }
+
+        width = Math.round(width * this.globalScale);
+        height = Math.round(height * this.globalScale);
 
         this.gameCanvas.setAttribute('width', width);
         this.gameCanvas.setAttribute('height', height);
         this.gameCanvas.setAttribute('id', 'gameCanvas');
 
         this.gameCanvas.style.position = "absolute";
-        this.gameCanvas.style.left = left + "px";
-        this.gameCanvas.style.top = top + "px";
 
-        document.body.appendChild(this.gameCanvas);
+        this.gameCanvas.style.left = Math.round((pageWidth - width) * 0.5) + "px";
+        this.gameCanvas.style.top = Math.round((pageHeight - height) * 0.5) + "px";
+
+        if (bAppendCanvas) {
+          document.body.appendChild(this.gameCanvas);
+        }
 
         this.setCanvas(this.gameCanvas);
       }
+    },
+
+    render: function() {
+      var i;  // Dummy text node used to force WebKit browsers to refresh the canvas.
+      
+      if (this.bWantsToRender) {
+        window.requestAnimFrame()(this.render.bind(this));
+      }
+
+      this.callListeners("draw", this.activeContext);
+
+      if (this.activeContext !== this.screenContext) {
+        this.screenContext.save();
+        this.screenContext.scale(this.globalScale, this.globalScale);
+        this.screenContext.drawImage(this.activeContext.canvas, 0, 0);
+        this.screenContext.restore();
+      }
+
+      // var bStyle = document.body.style;
+      // bStyle.backgroundColor = "#fad";
+
+      // Force webkit browsers to refresh the page.
+      // document.body.removeChild(document.body.appendChild(document.createElement('style')));      
+      // document.body.style.webkitTransform = 'scale(1)';
+      // this.gameCanvas.style.webkitTransform = 'scale(1)';
+
+      // var n = document.createTextNode(' ');
+      // this.gameCanvas.appendChild(n);
+      // setTimeout(function(){n.parentNode.removeChild(n);}, 0);
     },
 
     setCanvas: function(newCanvas) {
@@ -79,12 +160,20 @@ joe.GraphicsClass = new joe.ClassEx(null, [
       return this.gameCanvas;
     },
 
+    getScreenWidth: function() {
+      return this.gameCanvas ? this.gameCanvas.width : 0;
+    },
+
+    getScreenHeight: function() {
+      return this.gameCanvas ? this.gameCanvas.height : 0;
+    },
+
     getWidth: function() {
-      return this.gameCanvas.width;
+      return this.wantWidth;
     },
 
     getHeight: function() {
-      return this.gameCanvas.height;
+      return this.wantHeight;
     },
 
     createOffscreenBuffer: function(width, height, setAsActive) {
@@ -111,8 +200,8 @@ joe.GraphicsClass = new joe.ClassEx(null, [
 
     clear: function(buffer, width, height) {
       var targetBuffer = buffer || this.activeContext;
-      var clearWidth = width || this.gameCanvas.width;
-      var clearHeight = height || this.gameCanvas.height;
+      var clearWidth = width || this.getWidth();
+      var clearHeight = height || this.getHeight();
       
       targetBuffer.clearRect(0, 0, clearWidth, clearHeight);
     },
@@ -135,8 +224,8 @@ joe.GraphicsClass = new joe.ClassEx(null, [
 
     clearToColor: function(color, buffer, width, height) {
       var targetBuffer = buffer || this.activeContext;
-      var clearWidth = width || this.gameCanvas.width;
-      var clearHeight = height || this.gameCanvas.height;
+      var clearWidth = width || this.getWidth();
+      var clearHeight = height || this.getHeight();
       
       targetBuffer.fillStyle = color;
       targetBuffer.fillRect(0, 0, clearWidth, clearHeight);
@@ -154,20 +243,6 @@ joe.GraphicsClass = new joe.ClassEx(null, [
       return newCanvas;   
     },
 
-    render: function() {
-      var i;
-      
-      if (this.bWantsToRender) {
-        window.requestAnimFrame()(this.render.bind(this));
-      }
-
-      this.callListeners("draw", this.activeContext);
-
-      if (this.activeContext !== this.screenContext) {
-        this.screenContext.drawImage(this.activeContext, 0, 0);
-      }
-    },
-
     start: function() {
       this.bWantsToRender = true;
       this.render();
@@ -179,6 +254,8 @@ joe.GraphicsClass = new joe.ClassEx(null, [
   }
 ]);
 
-joe.Graphics = new joe.GraphicsClass(0, 0, 1024, 768);
+// gameWidth and gameHeight, if used, should be set in the first file loaded
+// into the browser.
+joe.Graphics = new joe.GraphicsClass(gameWidth || 1024, gameHeight || 768);
 
 

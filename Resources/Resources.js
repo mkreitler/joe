@@ -27,42 +27,122 @@
 // TODO: maintain a total resource count and add a progress API.
 // [END HELP]
 
-joe.Resources = {};
+joe.Resources = {
+  resourcesPending: 0,
+  bResourceLoadSuccessful: true,
+  resourcesLoaded: 0,
+
+  incPendingCount: function() {
+    this.resourcesPending += 1;
+  },
+
+  incLoadedCount: function(bLoadSuccessful) {
+    this.resourcesLoaded += 1;
+
+    this.bResourceLoadSuccessful &= bLoadSuccessful;
+
+    if (this.resourcesLoaded === this.resourcesPending) {
+      this.clearResourceCount();
+    }
+  },
+
+  clearResourceCount: function() {
+    this.resourcesPending = 0;
+    this.resourcesLoaded = 0;
+  },
+
+  loadComplete: function() {
+    return this.resourcesPending === 0 && this.resourcesLoaded === 0;
+  },
+
+  loadSuccessful: function() {
+    return this.bResourceLoadSuccessful;
+  }
+},
 
 joe.ResourceLoader = new joe.ClassEx(null, {
 // Static Definitions /////////////////////////////////////////////////////////
+  resourcesPending: 0,
+  resourcesLoaded: 0,
 
   loadImage: function(imageURL, onLoadedCallback, onErrorCallback, observer) {
     var image = new Image();
+
+    joe.Resources.incPendingCount();
   
-    if (onLoadedCallback) {
-      image.onload = function() {
-        onLoadedCallback.call(observer, image);
-      }
+    image.onload = function() {
+      joe.Resources.incLoadedCount(true);
+      if (onLoadedCallback) { onLoadedCallback.call(observer, image); }
     }
     
-    if (onErrorCallback) {
-      image.onerror = function() {
-        onErrorCallback.call(observer, imageURL);
-      }
+    image.onerror = function() {
+      joe.Resources.incLoadedCount(false);
+      if (onErrorCallback) { onErrorCallback.call(observer, imageURL); }
     }
   
     image.src = imageURL;
   
     return image;
   },
+
+  loadBitmapFont: function(fontURLs, onLoadedCallback, onErrorCallback, observer) {
+    var font = null,
+        image = null,
+        fontURL = null,
+        i = 0;
+
+        if (!(fontURLs instanceof Array)) {
+          fontURL = fontURLs;
+          fontURLs = [];
+          fontURLs.push(fontURL);
+        }
+
+        font = new joe.Resources.BitmapFont();
+
+        for (i=0; i<fontURLs.length; ++i) {
+          image = joe.Resources.loader.loadImage(fontURLs[i],
+                                                 function() {
+                                                              if (onLoadedCallback) { onLoadedCallback.call(observer, image) }
+                                                              font.onLoad(image);
+                                                            },
+                                                 onErrorCallback,
+                                                 observer);
+          font.addImage(image);
+        }
+
+    return font;
+  },
   
   loadFont: function(fontURL, onLoadedCallback, onErrorCallback, observer) {
-    var font = joe.Resources.FontEx.newFromResource(fontURL, onLoadedCallback, onErrorCallback, observer);    
+    joe.Resources.incPendingCount();
+
+    var font = joe.Resources.FontEx.newFromResource(fontURL,
+               function() {
+                 joe.Resources.incLoadedCount(true);
+                 if (onLoadedCallback) { onLoadedCallback.call(observer, font); }
+               },
+               function() {
+                 joe.Resources.incLoadedCount(false);
+                 if (onErrorCallback) { onErrorCallback.call(observer, fontURL); }
+               },
+               observer);    
     
     return font;
   },
   
   loadSound: function(soundURL, onLoadedCallback, onErrorCallback, observer, nChannels, repeatDelaySec) {
-    var boundLoadedCallback = onLoadedCallback ? onLoadedCallback.bind(observer) : null;
-    var boundErrorCallback = onErrorCallback ? onErrorCallback.bind(observer) : null;
-    
-    return joe.Sound.load(soundName, onLoadedCallback, onErrorCallback, nChannels, repeatDelaySec);
+    joe.Resources.incPendingCount();
+
+    return joe.Sound.load(soundURL,
+        function() {
+          joe.Resources.incLoadedCount(true);
+          if (onLoadedCallback) { onLoadedCallback.call(observer, soundURL); }
+        },
+        function() {
+          joe.Resources.incLoadedCount(false);
+          if (onLoadedCallback) { onLoadedCallback.call(observer, soundURL); }
+        },
+        nChannels, repeatDelaySec);
   },
 
   loadSVG: function(svgName, onLoadedCallback, onErrorCallback, observer) {
@@ -71,6 +151,8 @@ joe.ResourceLoader = new joe.ClassEx(null, {
     var title = svgName;
     var matches = null;
   
+    joe.Resources.incPendingCount();
+
     xhr.open("POST", url, true);
 
     // Send the proper header information along with the request
@@ -83,10 +165,12 @@ joe.ResourceLoader = new joe.ClassEx(null, {
             if (onErrorCallback) onErrorCallback.call(observer);
           }
           else if (onLoadedCallback) {
+            joe.Resources.incLoadedCount(true);
             onLoadedCallback.call(observer, xhr.responseText);
           }
         }
         else if (xhr.responseText) {
+          joe.Resources.incLoadedCount(false);
           if (onErrorCallback) onErrorCallback.call(observer, svgName);
         }
       }
