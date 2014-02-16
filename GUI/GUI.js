@@ -93,23 +93,35 @@ joe.GuiClass = new joe.ClassEx(
     },
 
     touchDown: function(id, x, y) {
+      var bConsumed = false;
+
       if (this.curTouchID < 0) {
         this.curTouchID = id;
-        this.mouseDown(x, y);
+        bConsumed = this.mouseDown(x, y);
       }
+
+      return bConsumed;
     },
 
     touchMove: function(id, x, y) {
+      var bConsumed = false;
+
       if (this.curTouchID === id) {
-        this.mouseDrag(x, y);
+        bConsumed = this.mouseDrag(x, y);
       }
+
+      return bConsumed;
     },
 
     touchUp: function(id, x, y) {
+      var bConsumed = false;
+
       if (this.curTouchID === id) {
-        this.mouseUp(x, y);
+        bConsumed = this.mouseUp(x, y);
         this.curTouchID = -1;
       }
+
+      return bConsumed;
     },
 
     mouseUp: function(x, y) {

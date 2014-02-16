@@ -22,6 +22,7 @@ joe.GUI.WidgetModule = {
   widgetAlpha: 1,
   widgetTransObserver: null,
   widgetTransWantPos: {x:0, y:0},
+  widgetParent: null,
 
   staticInit: function() {
     if (!this.bWidgetInitialized) {
@@ -90,6 +91,11 @@ joe.GUI.WidgetModule = {
 
   widgetAddChild: function(child) {
     this.widgetChildren.push(child);
+    child.widgetSetParent(this);
+  },
+
+  widgetSetParent: function(parent) {
+    this.widgetParent = parent;
   },
 
   widgetRemoveChild: function(child) {
@@ -245,6 +251,9 @@ joe.GUI.WidgetModule = {
       var i = 0,
           bHandled = false;
 
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
+
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {
         for (i=0; !bHandled && i<this.widgetChildren.length; ++i) {
@@ -265,6 +274,9 @@ joe.GUI.WidgetModule = {
       var i = 0,
           bHandled = false;
 
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
+
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {
         for (i=0; !bHandled && i<this.widgetChildren.length; ++i) {
@@ -275,7 +287,11 @@ joe.GUI.WidgetModule = {
       }
 
       if (!bHandled) {
-        bHandled = this.inputCallbacks ? (this.inputCallbacks.mouseDown ? this.inputCallbacks.mouseDown(x, y) : true) : false;
+        this.inputCallbacks ? (this.inputCallbacks.mouseDown ? this.inputCallbacks.mouseDown(x, y) : true) : false;
+
+        // Consume this event if it happened in our bounding box.
+        // This ensures we have a valid focusWidget.
+        bHandled = true;
       }
 
       return bHandled;
@@ -284,6 +300,9 @@ joe.GUI.WidgetModule = {
     mouseDrag: function(x, y) {
       var i = 0,
           bHandled = false;
+
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
 
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {
@@ -305,6 +324,9 @@ joe.GUI.WidgetModule = {
       var i = 0,
           bHandled = false;
 
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
+
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {
         for (i=0; !bHandled && i<this.widgetChildren.length; ++i) {
@@ -324,6 +346,9 @@ joe.GUI.WidgetModule = {
     mouseHold: function(x, y) {
       var i = 0,
           bHandled = false;
+
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
 
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {
@@ -345,6 +370,9 @@ joe.GUI.WidgetModule = {
       var i = 0,
           bHandled = false;
 
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
+
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {
         for (i=0; !bHandled && i<this.widgetChildren.length; ++i) {
@@ -364,6 +392,9 @@ joe.GUI.WidgetModule = {
     mouseDoubleClick: function(x, y) {
       var i = 0,
           bHandled = false;
+
+      x -= this.widgetParent ? this.widgetParent.bounds.x : 0,
+      y -= this.widgetParent ? this.widgetParent.bounds.y : 0;
 
       // Give children a chance to consume the event.
       if (this.bWidgetActive && this.bWidgetVisible) {

@@ -20,6 +20,97 @@ joe.loadModule = function(module) {
   }
 };
 
+// Events allow objects to communicate without requiring an understanding
+// of each other's interface. For example, a UI button can signal a 'press'
+// to its owning state machine without using a specific reference to the
+// state machine. That's the good news, but there is some bad news.
+//
+// Events are slow. You should use them only to communicate state changes
+// that occur intermittently, like a user button press or a sound that plays
+// once in a while.
+joe.eventsModule = {
+  events: {},
+
+  onMessage: function(messageName, listener, callback) {
+    if (!this.events.hasOwnProperty(messageName)) {
+      this.events[messageName] = [];
+    }
+
+    if (this.events[messageName].indexOf(listener) < 0) {
+      this.events[messageName].push({listener: listener, callback: callback});
+    }
+  },
+
+  messageUnlisten: function(messageName, listener) {
+    var msgInfo = null,
+        i = 0;
+
+    if (this.events.hasOwnProperty(messageName)) {
+      msgInfo = this.events.hasOwnProperty[messageName];
+      for (i=0; i<msgInfo.length; ++i) {
+        if (msgInfo[i].listener === listener) {
+          joe.Utility.erase(msgInfo, msgInfo[i]);
+          break;
+        }
+      }
+    }
+  },
+
+  messageUnlistenAll: function(listener) {
+    var key = null,
+        i = 0,
+        bErase = false;
+
+    for (key in this.events) {
+      bErased = true;
+
+      while (bErased) {
+        bErased = false;
+
+        for (i=0; i<key.length; ++i) {
+          if (key[i].listener === listener) {
+            joe.Utility.erase(key, key[i]);
+            bErased = true;
+            break;
+          }
+        }
+      }
+    }
+  },
+
+  message: function(eventName) {
+    var bConsumed = false,
+        key = null,
+        nList = 0,
+        list = null;
+
+    if (this.events.hasOwnProperty(eventName)) {
+      list = this.events[eventName];
+      nList = list.length;
+      for (i=0; i<nList; ++i) {
+        if (list[i].callback.apply(list[i].listener, Array.prototype.slice.call(arguments, 1))) {
+          break;
+        }
+      }
+    }
+  },
+
+  broadcast: function(eventName) {
+    var bConsumed = false,
+        key = null,
+        nList = 0,
+        list = null;
+
+    if (this.events.hasOwnProperty(eventName)) {
+      list = this.events[eventName];
+      nList = list.length;
+      for (i=0; i<nList; ++i) {
+        list[i].callback.apply(list[i].listener, Array.prototype.slice.call(arguments, 1));
+      }
+    }
+  }
+};
+
 joe.ClassEx = function(classModules, instanceModules) {
   var classMods = classModules; 
   var instMods = instanceModules;
@@ -30,6 +121,11 @@ joe.ClassEx = function(classModules, instanceModules) {
     // Call the new class' 'init' method 
     this.init.apply(this, arguments);
   };
+
+  // Hook all joe objects into the event system.
+  var _newPrototype = function() {}
+  _newPrototype.prototype = joe.eventsModule;
+  _class.prototype = new _newPrototype();
 
   classModules = joe.ClassEx.include(classModules);
   instanceModules = joe.ClassEx.include(instanceModules);
@@ -54,6 +150,10 @@ joe.ClassEx = function(classModules, instanceModules) {
   joe.ClassEx.extend(_class, classMods);
 
   return _class;
+};
+
+joe.ClassEx.clearMessages = function() {
+  joe.eventsModule.events = {};
 };
 
 // Resolve 'requires' directives into a master list of modules.
