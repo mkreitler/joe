@@ -10,12 +10,28 @@ joe.GameState.stateMachine = {
         this.currentState.exit();
         joe.UpdateLoop.removeListener(this.currentState);
         joe.Graphics.removeListener(this.currentState);
+
+        if (joe.Utility.isMobile()) {
+          joe.Multitouch.removeListener(this.currentState);
+        }
+        else {
+          joe.KeyInput.removeListener(this.currentState);
+          joe.MouseInput.removeListener(this.currentState);
+        }
       }
 
       if (newState) {
         newState.enter();
         joe.UpdateLoop.addListener(newState);
         joe.Graphics.addListener(newState);
+
+        if (joe.Utility.isMobile()) {
+          joe.Multitouch.addListener(newState);
+        }
+        else {
+          joe.KeyInput.addListener(newState);
+          joe.MouseInput.addListener(newState);
+        }
       }
 
       this.currentState = newState;

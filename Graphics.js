@@ -256,6 +256,7 @@ joe.GraphicsClass = new joe.ClassEx(null, [
 
 // gameWidth and gameHeight, if used, should be set in the first file loaded
 // into the browser.
-joe.Graphics = new joe.GraphicsClass(gameWidth || 1024, gameHeight || 768);
+joe.Graphics = new joe.GraphicsClass(typeof(gameWidth) !== 'undefined' ? gameWidth : 1024,
+                                     typeof(gameHeight) !== 'undefined' ? gameHeight : 768);
 
 
