@@ -185,7 +185,7 @@ joe.ClassEx.include = function(modules) {
         // Yes. Add them to the list of modules.
         if (includes instanceof Array) {
           for (j=0, jl=includes.length; j<jl; ++j) {
-            if (included.indexOf(includes[j])) {
+            if (included.indexOf(includes[j]) >= 0) {
               joe.assert(false, 'Circular dependency during include process!');
             }
             else {
