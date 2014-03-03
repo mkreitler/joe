@@ -31,6 +31,8 @@ joe.Scene = {
     return view;
   },
 
+  // Add a view to the hierarchy, drawn in zOrder where '0' is the near
+  // view, with higher-numbered views stacking behind.
   addView: function(view, zOrder) {
     var i = 0,
         bInserted = false;
@@ -52,7 +54,7 @@ joe.Scene = {
       }
     }
 
-    return bInserted;
+    return bInserted ? view : null;
   },
 
   removeView: function(view) {
@@ -64,6 +66,14 @@ joe.Scene = {
         joe.Utility.erase(this.views, this.views[i]);
         bRemoved = true;
       }
+    }
+  },
+
+  update: function(dt, gameTime) {
+    var i = 0;
+
+    for (i=this.views.length - 1; i>=0; --i) {
+      this.views[i].view.update(dt, gameTime);
     }
   },
 
@@ -87,6 +97,10 @@ joe.Scene = {
     },
 
     drawClipped: function(gfx) {
+      // Override to provide custom functionality.
+    },
+
+    update: function(dt, gameTime) {
       // Override to provide custom functionality.
     },
 

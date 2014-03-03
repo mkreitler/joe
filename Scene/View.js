@@ -15,13 +15,16 @@ joe.Scene.View = new joe.ClassEx({
   layers: [],
   workPos: {x:0, y:0},
 
-  init: function(width, height, viewportWidth, viewportHeight) {
+  init: function(width, height, viewportWidth, viewportHeight, camRelX, camRelY) {
     this.width = width;
     this.height = height;
     this.camera = new joe.Scene.Camera(viewportWidth, viewportHeight);
 
+    camRelX = typeof(camRelX) === 'undefined' ? 0.0 : camRelX;
+    camRelY = typeof(camRelY) === 'undefined' ? 0.0 : camRelY;
+
     this.setWorldPos(0, 0);
-    this.setSourcePos(0, 0);
+    this.setSourcePos(viewportWidth * camRelX, viewportHeight * camRelY, camRelX, camRelY);
   },
 
   getLayer: function(index) {
@@ -65,9 +68,9 @@ joe.Scene.View = new joe.ClassEx({
     return this.camera.getScreenRect();
   },
 
-  setSourcePos: function(x, y) {
+  setSourcePos: function(x, y, anchorX, anchorY) {
     if (this.camera) {
-      this.camera.setSourcePosition(x, y);
+      this.camera.setSourcePosition(x, y, anchorX, anchorY);
     }
   },
 
@@ -79,6 +82,14 @@ joe.Scene.View = new joe.ClassEx({
 
   getBounds: function() {
     return this.camera.getScreenRect();
+  },
+
+  update: function(dt, gameTime) {
+    var i=0;
+
+    for (i=this.layers.length-1; i>=0; --i) {
+      this.layers[i].layer.update(dt, gameTime);
+    }
   },
 
   draw: function(gfx) {
