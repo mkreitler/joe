@@ -13,8 +13,24 @@ joe.Sprite = new joe.ClassEx({
   frameIndex: 0,
   zOrder: 0,
   sequencer: null,
+  preDrawCallback: null,
+  postDrawCallback: null,
+  data: null,
   
-  init: function(spriteSheet, frameIndex, alignX, alignY, x, y, vx, vy, ax, ay, blocksMask, blockedByMask, boundsFactorX, boundsFactorY) {
+  init: function(spriteSheet,
+                 frameIndex,
+                 alignX,
+                 alignY,
+                 x,
+                 y,
+                 vx,
+                 vy,
+                 ax,
+                 ay,
+                 blocksMask,
+                 blockedByMask,
+                 boundsFactorX,
+                 boundsFactorY) {
     var width = 0,
         height = 0;
 
@@ -47,6 +63,19 @@ joe.Sprite = new joe.ClassEx({
                      blockedByMask);
 
     // TODO: add collision callback?
+  },
+
+  setData: function(newData) {
+    this.data = newData;
+  },
+
+  getData: function() {
+    return this.data;
+  },
+
+  setDrawCallbacks: function(preDraw, postDraw) {
+    this.preDrawCallback = preDraw;
+    this.postDrawCallback = postDraw;
   },
 
   startAnim: function(bRandomize) {
@@ -126,13 +155,29 @@ joe.Sprite = new joe.ClassEx({
   draw: function(gfx) {
     joe.assert(this.spriteSheet);
 
+    if (this.preDrawCallback) {
+      this.preDrawCallback(gfx, this);
+    }
+
     this.spriteSheet.draw(gfx, this.pos.x, this.pos.y, this.frameIndex);
+
+    if (this.postDrawCallback) {
+      this.postDrawCallback(gfx, this);
+    }
   },
 
   drawToWorld: function(gfx, worldX, worldY) {
     joe.assert(this.spriteSheet);
 
+    if (this.preDrawCallback) {
+      this.preDrawCallback(gfx, this);
+    }
+
     this.spriteSheet.draw(gfx, this.pos.x - worldX, this.pos.y - worldY, this.frameIndex);
+
+    if (this.postDrawCallback) {
+      this.postDrawCallback(gfx, this);
+    }
   },
 
   setPos: function(x, y) {

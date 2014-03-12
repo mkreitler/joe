@@ -250,16 +250,27 @@ joe.Sound = new joe.ClassEx({
         nNewChannels = numChannels - joe.Sound.sounds[resourceName].channels.length;
         for (i=0; i<nNewChannels; ++i) {
           newChannel = new Audio(path);
+          joe.Resources.incPendingCount();
           
           if (onLoadedCallback) {
             newChannel.addEventListener('canplaythrough', function callback() {
               onLoadedCallback(joe.Sound.sounds[resourceName], resourceName);
             }, false);
           }
+          else {
+            newChannel.addEventListener('canplaythrough', function callback() {
+              joe.Resources.incLoadedCount(true);
+            }, false);
+          }
           
           if (onErrorCallback) {
             newChannel.addEventListener('onerror', function callback() {
               onErrorCallback(resourceName);
+            }, false);
+          }
+          else {
+            newChannel.addEventListener('onerror', function callback() {
+              joe.Resources.incLoadedCount(false);
             }, false);
           }
         

@@ -96,7 +96,7 @@ joe.Resources.BitmapFont = new joe.ClassEx(
 		},
 
 		draw: function( gfx, text, x, y, align, vAlign ) {
-			var horzAlign = (1 - (vAlign || 0.5)) * (this.height + this.lineSpacing);
+			var vertAlign = (1 - (vAlign || 0.5)) * (this.height + this.lineSpacing);
 
 			if( typeof(text) != 'string' ) {
 				text = text.toString();
@@ -114,7 +114,7 @@ joe.Resources.BitmapFont = new joe.ClassEx(
 			
 			if( align == joe.Resources.BitmapFont.ALIGN.RIGHT || align == joe.Resources.BitmapFont.ALIGN.CENTER ) {
 				var width = this._widthForLine( text );
-				x -= align == joe.Resources.BitmapFont.ALIGN.CENTER ? width/2 : width;
+				x -= align == joe.Resources.BitmapFont.ALIGN.CENTER ? Math.round(width/2) : width;
 			}
 			
 
@@ -124,7 +124,7 @@ joe.Resources.BitmapFont = new joe.ClassEx(
 
 			for( var i = 0; i < text.length; i++ ) {
 				var c = text.charCodeAt(i);
-				x += this._drawChar( gfx, c - this.firstChar, x, y - horzAlign);
+				x += this._drawChar( gfx, c - this.firstChar, x, y - vertAlign);
 			}
 
 			if( this.alpha !== 1 ) {

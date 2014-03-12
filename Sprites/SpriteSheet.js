@@ -15,14 +15,14 @@ joe.SpriteSheet = new joe.ClassEx({
     this.srcImage = srcImage;
     this.rows = Math.max(1, rows);
     this.cols = Math.max(1, cols);
-    this.spriteWidth = this.srcImage.width / this.cols;
-    this.spriteHeight = this.srcImage.height / this.rows;
+    this.spriteWidth = Math.round(this.srcImage.width / this.cols);
+    this.spriteHeight = Math.round(this.srcImage.height / this.rows);
     this.setAlignment(alignX, alignY);
   },
 
   setAlignment: function(alignX, alignY) {
-    this.alignX = alignX || 0;
-    this.alignY = alignY || 0;
+    this.alignX = typeof(alignX) === 'undefined' ? 0 : alignX;
+    this.alignY = typeof(alignY) === 'undefined' ? 0 : alignY;
   },
 
   getCellWidth: function() {
@@ -48,6 +48,6 @@ joe.SpriteSheet = new joe.ClassEx({
 
 
     gfx.drawImage(this.srcImage, col * this.spriteWidth, row * this.spriteHeight, this.spriteWidth, this.spriteHeight,
-                  x - this.alignX * this.spriteWidth, y - this.alignY * this.spriteHeight, this.spriteWidth, this.spriteHeight);
+                  Math.round(x - this.alignX * this.spriteWidth), Math.round(y - this.alignY * this.spriteHeight), this.spriteWidth, this.spriteHeight);
   }
 });

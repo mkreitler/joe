@@ -102,8 +102,8 @@ joe.ResourceLoader = new joe.ClassEx(null, {
         for (i=0; i<fontURLs.length; ++i) {
           image = joe.Resources.loader.loadImage(fontURLs[i],
                                                  function() {
-                                                              if (onLoadedCallback) { onLoadedCallback.call(observer, image) }
                                                               font.onLoad(image);
+                                                              if (onLoadedCallback) { onLoadedCallback.call(observer, image) }
                                                             },
                                                  onErrorCallback,
                                                  observer);

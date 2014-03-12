@@ -1,3 +1,24 @@
+/**
+ *  Provides helper functions common to most games.
+ *
+ *  usage:
+ *
+ *  requires: joe.GameModule,
+ *
+ *  images: {"image1", "image2", "image3", ...}, // Assumed to reside in the img directory
+ *  fonts:  {font1: "relative URL to font resource #1",
+ *           font2: "[relative URL to font resource #2, part a", "relative URL to font resource #2, part b"]},
+ *  sounds: {"sound1", "sound2", "sound3", ...}, // Assumed to reside in the snd directory 
+ *
+ *  onResourceLoadComplete: function() {
+ *    var image = this.getImage("image1"),
+ *        font = this.getFont("font1"),
+ *        sound = this.getSound("sound1");
+ *
+ *    // Set up scene and other resource-dependent structure.
+ *  }
+ */
+
 joe.GameModule = {
   images: {
     // exampleImg: null // this will load img/exampleImg.png and store the resource in this.images.exampleImg.
@@ -68,7 +89,13 @@ joe.GameModule = {
     // TODO: add logic
   },
 
+  onResourceLoadComplete: function() {
+    // Override this in the child game class.
+  },
+
   gameStart: function() {
+    this.onResourceLoadComplete();
+
     joe.UpdateLoop.addListener(this);
     joe.Graphics.addListener(this);
 

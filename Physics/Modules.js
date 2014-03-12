@@ -31,6 +31,14 @@ joe.kinematicObject = {
     this.pos.y = newY;
   },
 
+  kinOffsetPosition: function(dx, dy) {
+    this.oldPos.x = this.pos.x;
+    this.oldPos.y = this.pos.y;
+
+    this.pos.x += dx;
+    this.pos.y += dy;
+  },
+
   getX: function() {
     return this.pos.x;
   },

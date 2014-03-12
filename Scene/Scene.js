@@ -91,9 +91,14 @@ joe.Scene = {
 
   LayerInterface: {
     parent: null,
+    bDefaultConsumeInput: true,
 
     setParent: function(view) {
       this.parent = view;
+    },
+
+    setDefaultConsumeInput: function(bNewDefault) {
+      this.bDefaultConsumeInput = bNewDefault;
     },
 
     drawClipped: function(gfx) {
@@ -104,37 +109,37 @@ joe.Scene = {
       // Override to provide custom functionality.
     },
 
-    // Default IO handlers.
+    // Default IO handlers. Override to provide custom functionality.
     mouseDown: function(x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     mouseOver: function(x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     mouseHold: function(x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     mouseDrag: function(x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     mouseUp: function(x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     touchDown: function(id, x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     touchMove: function(id, x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     },
 
     touchDown: function(id, x, y) {
-      return true;
+      return this.bDefaultConsumeInput
     }
   } 
 };

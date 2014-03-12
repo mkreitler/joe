@@ -37,6 +37,10 @@ joe.Scene.SpriteLayer = new joe.ClassEx({
     sprite.setZOrder(zOrder);
   },
 
+  removeAllSprites: function() {
+    this.sprites.length = 0;
+  },
+
   removeSprite: function(sprite) {
     joe.Utility.erase(this.sprites, sprite);
   },
